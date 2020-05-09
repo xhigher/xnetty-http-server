@@ -1,4 +1,4 @@
-# XNetty-http-server
+# xnetty-http-server
 基于netty构建的Web微服务应用框架
 
 简介
