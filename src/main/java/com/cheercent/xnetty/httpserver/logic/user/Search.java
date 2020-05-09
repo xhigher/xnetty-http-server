@@ -48,19 +48,19 @@ public final class Search extends XLogic {
 
     @Override
     protected String execute() {
-        JSONObject resultData = new JSONObject();
-        RedisKey redisKey = RedisConfig.SEARCH_TYPE_RESULT.build().append(SearchType.user).append(CommonUtils.md5(keywords)).append(pagesize).append(pagenum);
-        String redisData = XRedis.get(redisKey);
+    	JSONArray resultData = null;
+        String fieldPagenum = String.valueOf(pagenum);
+        RedisKey redisKey = RedisConfig.SEARCH_TYPE_RESULT.build().append(SearchType.user).append(CommonUtils.md5(keywords));
+        String redisData = XRedis.hget(redisKey, fieldPagenum);
         if (redisData == null) {
             UserSearchModel userModel = new UserSearchModel();
-            JSONArray userList = userModel.getList(keywords, pagenum, pagesize);
-            if (userList == null) {
+            resultData = userModel.getList(keywords, pagenum, pagesize);
+            if (resultData == null) {
                 return errorInternalResult();
             }
-            resultData.put(DataKey.USER, userList);
-
+            XRedis.hset(redisKey, fieldPagenum, resultData.toJSONString());
         } else {
-            resultData = JSONObject.parseObject(redisData);
+            resultData = JSONArray.parseArray(redisData);
         }
 
         return this.successResult(resultData);
